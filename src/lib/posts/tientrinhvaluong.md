@@ -1,7 +1,7 @@
 ---
-title: "Tiến trình & Luồng - Bài tập 22"
-date: "2025-05-05"
-updated: "2025-05-05"
+title: "Ứng dụng phân tán - Bài tập 2"
+date: "2025-04-28"
+updated: "2025-04-28"
 categories:
   - sveltekit
   - markdown
