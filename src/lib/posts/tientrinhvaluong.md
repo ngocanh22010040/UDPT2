@@ -61,7 +61,7 @@ Các tính toán mô hình tài chính có thể được chia thành nhiều ph
 Mỗi trang web hoặc mỗi phần của trang có thể được tải trong một tiến trình riêng biệt.
 
 ## 3. Danh sách các trường hợp nên dùng Thread, Process và cả hai
-![Bảng ví dụ](../../static/images/bang1.png)
+![Bảng ví dụ](/images/bang1.png)
 
 ## 4. Tìm hiểu về ChatGPT training với distributed system
 ChatGPT sử dụng distributed systems để huấn luyện các mô hình AI của mình với tập dữ liệu cực lớn. Điều này được thực hiện bằng cách phân chia quá trình huấn luyện thành các phần nhỏ và chạy song song trên nhiều máy tính (hoặc node) trong hệ thống phân tán. Cụ thể:
