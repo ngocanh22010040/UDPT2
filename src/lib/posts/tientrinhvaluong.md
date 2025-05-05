@@ -11,6 +11,7 @@ coverWidth: 16
 coverHeight: 9
 excerpt: "This post demonstrates how to include a Svelte component in a Markdown post."
 ---
+
 ## 1. Kiểm tra CPU, GPU, RAM và giải thích về hiệu năng máy tính
 
 - CPU: Máy của bạn sử dụng Intel Core i5-11320H, 4 lõi, 8 luồng, với tốc độ cơ bản 3.19 GHz và có thể tăng tốc tối đa lên tới 4.4 GHz. Điều này giúp máy xử lý tốt các tác vụ đa nhiệm, chơi game nhẹ, lập trình và xử lý đồ họa cơ bản.
