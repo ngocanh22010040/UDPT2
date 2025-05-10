@@ -35,7 +35,7 @@ excerpt: This post demonstrates how to include a Svelte component in a Markdown 
 #### So sánh với các thư viện/framework khác
 ![Bảng ví dụ](/images/bang4.png)
 
-# Ứng dụng thực tế
+#### Ứng dụng thực tế
 - Thương mại điện tử (lưu đơn hàng, tồn kho theo thời gian thực).
 - IoT: xử lý dữ liệu cảm biến liên tục.
 - Trò chơi trực tuyến: lưu trạng thái người chơi, bảng xếp hạng.
