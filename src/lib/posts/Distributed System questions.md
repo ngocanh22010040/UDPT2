@@ -14,7 +14,7 @@ excerpt: This post demonstrates how to include a Svelte component in a Markdown 
 
 ## Distributed System questions
 ### 1. Hệ thống phân tán, tập trung, phi tập trung khác nhau như thế nào, nêu ví dụ về mỗi loại,làm thế nào để xác định sự khác biệt chính?
-Hệ thống tập trung (Centralized System):
+Hệ thống tập trung (Centralized System):1 máy sử lýlý
 - Mô tả: Tất cả xử lý và lưu trữ dữ liệu đều tập trung ở một máy chủ duy nhất.
 - Ví dụ: Máy tính mainframe, hệ thống quản lý ngân hàng cổ điển.
 
@@ -22,7 +22,7 @@ Hệ thống phi tập trung (Decentralized System):
 - Mô tả: Có nhiều trung tâm điều khiển, không có một điểm trung tâm nào kiểm soát toàn bộ.
 - Ví dụ: Blockchain, BitTorrent.
 
-Hệ thống phân tán (Distributed System):
+Hệ thống phân tán (Distributed System): nhiều máy sử lýlý
 - Mô tả: Tập hợp các máy tính độc lập liên kết với nhau để cùng giải quyết một nhiệm vụ như thể là một hệ thống duy nhất.
 - Ví dụ: Google Search, Hệ thống ngân hàng hiện đại.
 
@@ -44,7 +44,7 @@ Hệ thống vẫn hoạt động ngay cả khi một số phần tử bị lỗ
 Nhiều người dùng truy cập và xử lý tài nguyên đồng thời.
 - Tính độc lập vị trí (Location Transparency):
 Người dùng không cần biết dịch vụ hoặc dữ liệu ở đâu.
-
+tính mở, tính chịu lỗi, tính phân tán
 ### 3. Mục đích của nút chủ trong một hệ phân tán là để làm gì? Điều gì sẽ xảy ra nếu nút chủ gặp sự cố?
  - Mục đích:
 Điều phối hoạt động, phân công công việc, đồng bộ dữ liệu, duy trì trạng thái chung.
