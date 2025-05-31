@@ -26,7 +26,7 @@ Dưới đây là phần **giải thích chi tiết các thành phần chính tr
 * **Hoạt động:** Gửi dữ liệu đo được theo thời gian thực đến hệ thống thông qua giao thức **MQTT**.
 * **Giao thức:** MQTT (Message Queuing Telemetry Transport) – nhẹ, tối ưu cho thiết bị IoT.
 
-#### **22.2. MQTT Broker (e.g. Mosquitto)**
+#### **2.2. MQTT Broker (e.g. Mosquitto)**
 
 * **Vai trò:** Trung gian nhận và phân phối thông điệp từ các thiết bị cảm biến đến các hệ thống xử lý.
 * **Hoạt động:**
