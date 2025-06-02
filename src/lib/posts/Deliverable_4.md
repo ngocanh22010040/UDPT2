@@ -74,9 +74,10 @@ Tính đến thời điểm hiện tại, dự án đã hoàn thành các thành
 * Giao diện trang chủ hiển thị danh sách sản phẩm.
 
 ####  Video demo:
-
-* Hiển thị quá trình giao tiếp giữa các nút (upload lên blog/Youtube).
-* Trình bày việc thêm sản phẩm và đồng bộ dữ liệu.
+<video width="640" controls>
+  <source src="/video/Demo%202025.06.02%20-%2002.16.02.01.mp4" type="video/mp4">
+  Trình duyệt không hỗ trợ video.
+</video>
 
 ### 6. Code Snippets tiêu biểu
 
