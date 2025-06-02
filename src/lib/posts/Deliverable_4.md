@@ -1,7 +1,7 @@
 ---
 title: "Deliverable 4 : Website"
-date: "2025-06-1"
-updated: "2025-06-1"
+date: "2025-06-2"
+updated: "2025-06-2"
 categories:
   - "sveltekit"
   - "markdown"
