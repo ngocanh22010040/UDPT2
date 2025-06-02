@@ -12,221 +12,113 @@ coverHeight: 9
 excerpt: This post demonstrates how to include a Svelte component in a Markdown post.
 ---
 
-## BÁO CÁO ĐỒ ÁN: Hệ thống quản lý dữ liệu cảm biến (IoT) sử dụng ScyllaDB
-### 1. Bản vẽ kiến trúc hệ thống
-Sơ đồ kiến trúc hệ thống mô tả luồng dữ liệu từ các thiết bị cảm biến, qua MQTT Broker, xử lý bởi dịch vụ thu thập dữ liệu, lưu trữ tại cụm cơ sở dữ liệu ScyllaDB và truy xuất dữ liệu thông qua REST API lên giao diện người dùng. Hệ thống đảm bảo tính mở rộng, thời gian thực và hiệu suất cao.
-Hình minh họa sơ đồ kiến trúc:
-![Bảng ví dụ](/images/sdkt.png)
+# Thiết kế Hệ thống (Deliverable 2)
 
-### 2. Mô tả chi tiết các thành phần trong hệ thống
-Dưới đây là phần **giải thích chi tiết các thành phần chính trong hệ thống quản lý dữ liệu cảm biến (IoT) sử dụng ScyllaDB**, bao gồm vai trò và cách hoạt động của từng thành phần, cùng với cơ chế **sharding**, **replication** và thuật toán được sử dụng:
-#### **2.1. Sensor Devices (Thiết bị cảm biến)**
+### 1. **Bản vẽ kiến trúc hệ thống (System Architecture Diagram)**
 
-* **Vai trò:** Thu thập dữ liệu môi trường như nhiệt độ, độ ẩm, ánh sáng,...
-* **Hoạt động:** Gửi dữ liệu đo được theo thời gian thực đến hệ thống thông qua giao thức **MQTT**.
-* **Giao thức:** MQTT (Message Queuing Telemetry Transport) – nhẹ, tối ưu cho thiết bị IoT.
+**Mô tả sơ đồ kiến trúc:**
 
-#### **2.2. MQTT Broker (e.g. Mosquitto)**
+Hệ thống bao gồm 3 thành phần chính: frontend, backend và cơ sở dữ liệu ScyllaDB, được triển khai thông qua Docker Compose. Người dùng tương tác với giao diện frontend (trình duyệt), các yêu cầu được gửi đến backend (FastAPI), backend kết nối với ScyllaDB để truy xuất hoặc ghi dữ liệu.
+![Bảng ví dụ](/images/sd.png)
+### 2. **Mô tả chi tiết các thành phần trong hệ thống**
 
-* **Vai trò:** Trung gian nhận và phân phối thông điệp từ các thiết bị cảm biến đến các hệ thống xử lý.
-* **Hoạt động:**
+#### 2.1.Frontend (React + JavaScript)
+- Vai trò: Giao diện người dùng tương tác trực tiếp với khách hàng, hiển thị danh sách sản phẩm, cung cấp chức năng tìm kiếm, lọc sản phẩm theo thời gian thực mà không cần tải lại trang.
+- Cách thức hoạt động: Gửi yêu cầu HTTP đến backend API, nhận dữ liệu JSON trả về để cập nhật giao diện động. Xử lý các sự kiện người dùng (như gõ từ khóa tìm kiếm) ngay trên trình duyệt.
 
-  * Thiết bị **publish** dữ liệu lên các topic.
-  * Dịch vụ xử lý dữ liệu **subscribe** để nhận dữ liệu.
-* **Lý do chọn:** Mosquitto là broker nhẹ, hiệu quả cao cho môi trường tài nguyên thấp.
+#### 2.2.Backend REST API (FastAPI)
+- Vai trò: Xử lý các yêu cầu từ frontend, thực hiện nghiệp vụ quản lý dữ liệu sản phẩm, giao tiếp với cơ sở dữ liệu, cung cấp dữ liệu trả về theo chuẩn JSON.
+- Cách thức hoạt động: Nhận request HTTP, gọi tới cơ sở dữ liệu ScyllaDB để thực hiện thao tác truy vấn, thêm, sửa, xóa sản phẩm; sau đó trả kết quả về frontend. Hỗ trợ CORS để cho phép frontend truy cập API dễ dàng.
 
+#### 2.3.Cơ sở dữ liệu (ScyllaDB Cluster)
+- Vai trò: Lưu trữ dữ liệu sản phẩm giày với khả năng xử lý nhanh, mở rộng tốt và độ tin cậy cao.
+- Cách thức hoạt động:
+ -  Sharding: Dữ liệu được phân tán (chia nhỏ) theo khóa chính (UUID sản phẩm) dựa trên thuật toán phân vùng (partitioning) của ScyllaDB. Mỗi node trong cluster lưu một phần dữ liệu, giúp tăng khả năng xử lý song song và giảm tải cho từng node.
+ -  Replication: Mỗi bản ghi được sao chép nhiều lần (replication factor) trên các node khác nhau để đảm bảo tính sẵn sàng và khả năng chống mất dữ liệu khi một node gặp lỗi. Khi có thay đổi, dữ liệu được đồng bộ giữa các bản sao theo cơ chế nhất quán cuối (eventual consistency).
+ -  Thuật toán phân phối: ScyllaDB sử dụng consistent hashing để định vị dữ liệu đến node phù hợp dựa trên partition key.
 
-#### **2.3. Data Ingestion Service (Python/Node.js)**
+#### 2.4.Load Balancer
+- Vai trò: Phân phối các yêu cầu từ frontend đến nhiều instance backend API nhằm cân bằng tải và tăng khả năng chịu lỗi.
+- Cách thức hoạt động: Dựa trên thuật toán round-robin hoặc các thuật toán cân bằng tải khác, load balancer chuyển tiếp yêu cầu tới backend đang sẵn sàng và ít tải.
 
-* **Vai trò:** Nhận dữ liệu từ MQTT Broker, xử lý và lưu trữ vào ScyllaDB.
-* **Chức năng chính:**
+#### 2.5. Leader Election Module
+- Vai trò: Quản lý việc chọn một node làm leader trong cụm backend nhằm đảm bảo tính nhất quán trong các hoạt động phối hợp hoặc đồng bộ.
+- Cách thức hoạt động: Sử dụng thuật toán bầu chọn leader phổ biến như Bully hoặc Raft, các node sẽ tranh chọn leader dựa trên tiêu chí như ưu tiên ID hoặc trạng thái hoạt động, đảm bảo luôn có một node làm đầu mối xử lý các tác vụ quan trọng.
 
-  * Parse dữ liệu JSON từ cảm biến.
-  * Xử lý logic đơn giản như làm sạch, chuẩn hóa dữ liệu.
-  * Gửi truy vấn ghi (INSERT) vào ScyllaDB.
-* **Giao tiếp:** Thông qua **thư viện MQTT client** và **ScyllaDB driver** (cassandra-driver cho Python).
+#### 2.6.Fault Tolerance Module
+- Vai trò: Giám sát hoạt động của các node, xử lý các sự cố như node bị lỗi hoặc mất kết nối để hệ thống vẫn hoạt động ổn định.
+- Cách thức hoạt động: Kiểm tra định kỳ trạng thái các node, tự động retry kết nối khi có lỗi, và khởi động lại node hoặc chuyển sang node dự phòng khi phát hiện sự cố, tránh làm gián đoạn dịch vụ.
 
-#### **2.4. ScyllaDB Cluster (Node1, Node2, Node3)**
-
-* **Vai trò:** Lưu trữ dữ liệu cảm biến lớn với hiệu suất cao, khả năng mở rộng tốt.
-* **Cơ chế hoạt động:**
-
-  * **Sharding:** Dữ liệu được **tự động chia nhỏ (shard)** trên nhiều node bằng **token-based sharding**.
-    → Mỗi node chỉ xử lý một phần dữ liệu → tối ưu truy vấn.
-  * **Replication:** Mỗi bản ghi được **sao chép sang nhiều node** theo **replication factor (RF)**.
-    → Ví dụ: RF = 3 → mỗi dữ liệu có 3 bản trên 3 node khác nhau.
-* **Thuật toán đồng thuận:** **Gossip Protocol** + **Tunable Consistency**.
-  → Cho phép chọn mức độ nhất quán theo từng truy vấn (e.g. `QUORUM`, `ALL`, `ONE`).
-
-#### **2.5. REST API Service (Python Flask, Node.js Express, v.v)**
-
-* **Vai trò:** Là trung gian giữa frontend và database.
-* **Chức năng:**
-
-  * Nhận yêu cầu từ frontend (GET/POST).
-  * Truy vấn dữ liệu từ ScyllaDB và trả về kết quả.
-  * Xử lý xác thực (nếu có).
-* **Lý do chọn:** REST API dễ tích hợp và nhẹ cho các ứng dụng IoT.
- 
-#### **2.6. Frontend Dashboard (HTML/CSS/JS, React, hoặc Vue)**
-
-* **Vai trò:** Giao diện hiển thị dữ liệu cảm biến cho người dùng cuối.
-* **Chức năng:**
-
-  * Gửi yêu cầu đến REST API.
-  * Hiển thị dữ liệu dạng bảng, biểu đồ, theo thời gian thực.
-  * Có thể thêm tính năng cảnh báo nếu dữ liệu vượt ngưỡng.
- 
-####  **2.7. Giải thích Sharding & Replication trong ScyllaDB**
-
-##### 🔹 **Sharding (Phân mảnh dữ liệu):**
-
-* **Cơ chế:** Dữ liệu được phân bổ theo giá trị **partition key** qua **vòng băm (token ring)**.
-* **Thuật toán:** **Consistent Hashing**.
-* **Lợi ích:**
-
-  * Cân bằng tải giữa các node.
-  * Truy vấn chỉ gửi đến node chứa shard liên quan.
-
-##### 🔹 **Replication (Sao chép dữ liệu):**
-
-* **Cơ chế:** Dữ liệu được sao chép sang nhiều node khác nhau.
-* **Cài đặt:** `Replication Factor` (ví dụ: 3).
-* **Giao thức:** **Gossip Protocol** giúp các node đồng bộ trạng thái, phát hiện lỗi node.
-* **Lợi ích:**
-
-  * Tăng tính sẵn sàng và độ tin cậy.
-  * Node hỏng vẫn có bản sao dữ liệu ở node khác.
-
-#####  Tổng kết
-![Bảng ví dụ](/images/tongket.png)
+#### 2.7.Docker Compose
+- Vai trò: Công cụ quản lý và tự động hóa việc triển khai các thành phần hệ thống (frontend, backend, database, các module hỗ trợ) trên môi trường phát triển hoặc sản xuất.
+- Cách thức hoạt động: Định nghĩa các service trong file docker-compose.yml, thiết lập mạng nội bộ và các biến môi trường cần thiết, giúp dễ dàng khởi động và cấu hình đồng thời tất cả các thành phần hệ thống bằng một lệnh duy nhất.
 
 
-### 3. Công nghệ và thư viện sử dụng
-![Bảng ví dụ](/images/lydo.png)
+### 3. **Công nghệ và thư viện sử dụng**
+![Bảng ví dụ](/images/bang15.png)
 
-### 4. Mô hình dữ liệu (Database Model)
-#### 4.1. Giới thiệu chung
-* Hệ thống lưu trữ dữ liệu cảm biến thời gian thực với lượng lớn dữ liệu liên tục từ nhiều thiết bị IoT. Do đó, mô hình dữ liệu cần tối ưu cho việc ghi nhanh, mở rộng theo chiều ngang, và truy vấn hiệu quả dựa trên các khóa phân vùng (partition keys) phù hợp.
+### 4. **Mô hình dữ liệu (Database Model)**
+#### Mô hình bảng `shoes` trong ScyllaDB
 
-* ScyllaDB là hệ quản trị cơ sở dữ liệu NoSQL dạng wide-column store, tương tự Cassandra, hỗ trợ mô hình dữ liệu phân tán, chịu tải cao, có khả năng sharding và replication tự động.
+| Tên trường    | Kiểu dữ liệu       | Mô tả                                   |
+| ------------- | ------------------ | --------------------------------------- |
+| `id`          | UUID (PRIMARY KEY) | Khóa chính, định danh duy nhất sản phẩm |
+| `name`        | text               | Tên sản phẩm                            |
+| `brand`       | text               | Thương hiệu sản phẩm                    |
+| `model`       | text               | Mẫu sản phẩm                            |
+| `price`       | double             | Giá bán                                 |
+| `description` | text               | Mô tả chi tiết sản phẩm                 |
+| `images`      | list<text>         | Danh sách URL ảnh sản phẩm              |
+| `detail_url`  | text               | Đường dẫn trang chi tiết sản phẩm       |
 
-#### 4.2. Các bảng chính
-![Bảng ví dụ](/images/bang12.png)
-
-#### 4.3. Chi tiết bảng sensor_data
-```
-CREATE TABLE sensor_data (
-    sensor_id text,
-    timestamp timestamp,
-    temperature float,
-    humidity float,
-    light int,
-    PRIMARY KEY (sensor_id, timestamp)
-) WITH CLUSTERING ORDER BY (timestamp DESC);
-```
-- Partition key: sensor_id — đảm bảo dữ liệu từ cùng một cảm biến được lưu trên cùng một node, tối ưu truy vấn theo cảm biến.
-- Clustering key: timestamp — sắp xếp các bản ghi theo thời gian giảm dần, giúp truy vấn dữ liệu mới nhất dễ dàng.
-- Hỗ trợ truy vấn: Lấy dữ liệu cảm biến theo ID và khoảng thời gian (ví dụ: 1 giờ gần nhất).
-
-#### 4.4. BBảng sensor_metadata
-```
-CREATE TABLE sensor_metadata (
-    sensor_id text PRIMARY KEY,
-    location text,
-    sensor_type text,
-    installation_date date
-);
-```
-- Lưu thông tin cấu hình cảm biến.
-- Giúp quản trị viên hoặc hệ thống biết được cảm biến nào ở đâu, loại nào để phục vụ truy vấn và báo cáo.
-
-#### 4.5. Replication và Sharding
-- Sharding:
-ScyllaDB tự động phân vùng dữ liệu dựa trên partition key (sensor_id). Mỗi sensor_id sẽ được ánh xạ đến một node trong cluster, giúp phân phối tải ghi và đọc đều trên các node.
-- Replication:
-Hệ thống cấu hình replication factor (ví dụ 3) để dữ liệu được sao chép trên 3 node khác nhau, đảm bảo tính sẵn sàng và độ bền dữ liệu khi có node bị lỗi.
-
-#### 4.6. Mô hình truy vấn tối ưu
-- Truy vấn phổ biến: Lấy dữ liệu cảm biến theo sensor_id và khoảng thời gian (timestamp từ ... đến ...).
-- Truy vấn metadata theo sensor_id.
-- Truy vấn cảnh báo (alerts) theo sensor_id hoặc alert_type.
+* **UUID làm khóa chính** giúp định danh duy nhất và phân phối dữ liệu đều trên các node trong cluster theo cơ chế consistent hashing.
+* **Sharding tự động:** ScyllaDB tự động phân chia dữ liệu theo `id` trên nhiều node để tối ưu truy vấn song song và hiệu năng.
+* **Replication:** Dữ liệu được sao chép trên nhiều node nhằm đảm bảo tính sẵn sàng và dự phòng khi node bị lỗi.
+* **Thiết kế bảng tối ưu cho việc đọc và ghi nhanh**, phù hợp với hệ thống có lượng lớn sản phẩm và yêu cầu truy vấn nhanh theo ID hoặc danh sách sản phẩm.
 
 ### 5. Chiến lược triển khai và cấu hình hệ thống
 
-#### 5.1. Mô hình triển khai tổng quan
+#### Công cụ triển khai:
 
-Hệ thống được triển khai theo mô hình **microservices container hóa**, với các thành phần được đóng gói bằng Docker, triển khai và điều phối bằng **Docker Compose** (với quy mô nhỏ) hoặc **Kubernetes (K8s)** (khi mở rộng).
+* **Docker & Docker Compose** được sử dụng để xây dựng, đóng gói và triển khai các thành phần của hệ thống.
+* Mỗi thành phần (frontend, backend, ScyllaDB cluster) được đóng gói trong container riêng biệt.
+* Docker Compose dùng để quản lý đa container, thiết lập mạng nội bộ giữa các service, biến môi trường, volume lưu trữ dữ liệu.
 
-#### 5.2. Các thành phần được triển khai
-![Bảng ví dụ](/images/bang14.png)
+#### Quy trình triển khai:
 
-#### 5.3. Docker Compose - ví dụ file `docker-compose.yml`
+1. **Khởi tạo môi trường:**
 
-```yml
-version: "3.8"
-services:
-  mqtt:
-    image: eclipse-mosquitto
-    ports:
-      - "1883:1883"
-      - "9001:9001"
-    volumes:
-      - ./config/mosquitto.conf:/mosquitto/config/mosquitto.conf
+   * Sử dụng Docker Compose file (`docker-compose.yml`) định nghĩa các service:
 
-  scylladb:
-    image: scylladb/scylla
-    container_name: scylla-node1
-    ports:
-      - "9042:9042"  # CQL
-    command: --smp 1 --memory 512M
+     * `frontend` (React app)
+     * `backend` (FastAPI)
+     * `scylla` (cụm ScyllaDB)
+     * Có thể thêm `load_balancer`, `leader_election`, và các service hỗ trợ khác.
 
-  ingestion:
-    build: ./data_ingestion
-    depends_on:
-      - mqtt
-      - scylladb
+2. **Cấu hình mạng nội bộ:**
 
-  api:
-    build: ./rest_api
-    ports:
-      - "5000:5000"
-    depends_on:
-      - scylladb
+   * Các container được kết nối qua mạng bridge riêng biệt để đảm bảo an toàn và hiệu suất truyền thông.
 
-  dashboard:
-    build: ./frontend
-    ports:
-      - "3000:3000"
-```
+3. **Thiết lập volume:**
 
-#### 5.4. Triển khai bằng Kubernetes (khi mở rộng)
+   * Lưu trữ dữ liệu ScyllaDB trên volume persist để tránh mất dữ liệu khi container khởi động lại.
 
-* Dùng **Kubernetes** để quản lý các Pod, Service và Volume nếu cần mở rộng quy mô.
-* **ScyllaDB Operator** sẽ giúp tự động tạo cluster ScyllaDB với cấu hình replication, sharding và giám sát hiệu quả.
-* Dùng **Helm** để cài đặt Mosquitto, ScyllaDB, các service ingestion/API/frontend nhanh chóng.
+4. **Khởi động và đồng bộ:**
 
-#### 5.5. Triển khai thử nghiệm nội bộ
+   * Backend có cơ chế chờ ScyllaDB sẵn sàng trước khi kết nối (wait-for-port logic).
+   * Các service frontend và backend khởi động song song, đảm bảo kết nối API mượt mà.
 
-* Cài đặt Docker Desktop và VS Code
+5. **Quản lý lỗi và tự phục hồi:**
 
-* Clone repository dự án
+   * Docker Compose cấu hình restart policy để tự động khởi động lại container khi gặp sự cố.
+   * Phần backend và cơ sở dữ liệu có cơ chế retry, leader election để đảm bảo fault tolerance.
 
-* Chạy lệnh:
+#### Kế hoạch mở rộng:
+* Trong tương lai, có thể mở rộng triển khai bằng **Kubernetes** để tận dụng:
 
-  ```bash
-  docker-compose up --build
-  ```
+  * Tự động scaling (Horizontal Pod Autoscaling)
+  * Quản lý cấu hình (ConfigMap, Secrets)
+  * Load balancing nội bộ (Service)
+  * Quản lý trạng thái (StatefulSets) cho cụm ScyllaDB
+* Kubernetes giúp tăng độ bền vững, tự phục hồi và dễ dàng quản lý hệ thống lớn hơn khi dự án phát triển.
 
-* Gửi dữ liệu test từ script MQTT publisher (hoặc thiết bị thật).
-
-* Truy cập dashboard tại `http://localhost:5173/`.
-
-#### 5.6. Ưu điểm của chiến lược triển khai
-
-| Ưu điểm                             | Giải thích                                                                          |
-| ----------------------------------- | ----------------------------------------------------------------------------------- |
-| **Dễ quản lý**                      | Docker Compose giúp định nghĩa toàn bộ kiến trúc trong một file duy nhất            |
-| **Tái sử dụng và mở rộng dễ dàng**  | Các thành phần là độc lập, có thể scale theo nhu cầu                                |
-| **Tự động hóa và CI/CD**            | Dễ dàng tích hợp vào pipeline CI/CD sau này (GitHub Actions, GitLab CI, Jenkins...) |
-| **Chuyển đổi môi trường linh hoạt** | Có thể chuyển đổi từ Docker sang Kubernetes mà không cần viết lại toàn bộ logic     |
