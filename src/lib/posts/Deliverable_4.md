@@ -68,11 +68,6 @@ Tính đến thời điểm hiện tại, dự án đã hoàn thành các thành
 
 ### 5. Demo hệ thống
 
-####  Hình ảnh:
-
-* Dashboard giám sát trạng thái nút (ảnh đính kèm trong báo cáo PDF).
-* Giao diện trang chủ hiển thị danh sách sản phẩm.
-
 ####  Video demo:
 <video width="640" controls>
   <source src="/video/Demo%202025.06.02%20-%2002.16.02.01.mp4" type="video/mp4">
